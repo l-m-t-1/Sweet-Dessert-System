@@ -9,7 +9,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @MapperScan({
         "com.sweet.dessertsystem.mapper",
         "com.sweet.dessertsystem.category",
-        "com.sweet.dessertsystem.dashboard"
+        "com.sweet.dessertsystem.dashboard",
+        "com.sweet.dessertsystem.stock"
 })
 @SpringBootApplication
 public class DessertSystemApplication {

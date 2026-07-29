@@ -12,6 +12,9 @@ import java.util.List;
 @Mapper
 public interface DessertMapper extends BaseMapper<Dessert> {
 
+    @Select("SELECT * FROM dessert WHERE id = #{id} FOR UPDATE")
+    Dessert findByIdForUpdate(Long id);
+
     @Select("""
             <script>
             SELECT d.id, d.name, d.category_id, c.name AS category_name,
