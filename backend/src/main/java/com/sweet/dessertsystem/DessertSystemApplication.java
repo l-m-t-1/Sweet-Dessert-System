@@ -10,7 +10,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
         "com.sweet.dessertsystem.mapper",
         "com.sweet.dessertsystem.category",
         "com.sweet.dessertsystem.dashboard",
-        "com.sweet.dessertsystem.stock"
+        "com.sweet.dessertsystem.stock",
+        "com.sweet.dessertsystem.order"
 })
 @SpringBootApplication
 public class DessertSystemApplication {
