@@ -4,6 +4,7 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
+import java.math.BigDecimal;
 
 public interface DashboardMapper {
     @Select("SELECT COUNT(*) FROM dessert")
@@ -27,4 +28,27 @@ public interface DashboardMapper {
             """)
     List<LowStockDessert> findLowStock(@Param("threshold") int threshold,
                                       @Param("limit") int limit);
+
+    @Select("""
+            SELECT COUNT(*) FROM orders
+            WHERE create_time >= CURRENT_DATE
+              AND create_time < CURRENT_DATE + INTERVAL 1 DAY
+            """)
+    long countTodayOrders();
+
+    @Select("""
+            SELECT COALESCE(SUM(total_amount), 0) FROM orders
+            WHERE create_time >= CURRENT_DATE
+              AND create_time < CURRENT_DATE + INTERVAL 1 DAY
+              AND status <> 'CANCELLED'
+            """)
+    BigDecimal sumTodaySales();
+
+    @Select("""
+            SELECT id, order_no, customer_name, total_amount, status, create_time
+            FROM orders
+            ORDER BY create_time DESC, id DESC
+            LIMIT #{limit}
+            """)
+    List<RecentOrder> findRecentOrders(@Param("limit") int limit);
 }

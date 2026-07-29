@@ -17,7 +17,10 @@ public class DashboardService {
                 mapper.countCategories(),
                 mapper.sumStock(),
                 mapper.countLowStock(LOW_STOCK_THRESHOLD),
-                mapper.findLowStock(LOW_STOCK_THRESHOLD, 5)
+                mapper.findLowStock(LOW_STOCK_THRESHOLD, 5),
+                mapper.countTodayOrders(),
+                mapper.sumTodaySales(),
+                mapper.findRecentOrders(5)
         );
     }
 }
