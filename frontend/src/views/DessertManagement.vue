@@ -1,0 +1,28 @@
+<template>
+  <div class="page">
+    <div class="page-head"><div><h2>甜品档案</h2><p class="muted">管理产品信息、价格、库存与销售状态。</p></div><el-button type="primary" @click="openCreate">＋ 新增甜品</el-button></div>
+    <section class="panel filters"><el-input v-model="filters.name" clearable placeholder="搜索甜品名称" @keyup.enter="search"/><el-select v-model="filters.categoryId" clearable placeholder="全部分类"><el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id"/></el-select><el-button type="primary" @click="search">查询</el-button><el-button @click="reset">重置</el-button></section>
+    <section class="panel"><el-table :data="result.records" v-loading="loading"><el-table-column label="甜品" min-width="230"><template #default="{row}"><div class="product"><el-image :src="row.image" fit="cover"><template #error><div>🍰</div></template></el-image><strong>{{row.name}}</strong></div></template></el-table-column><el-table-column prop="categoryName" label="分类"/><el-table-column label="价格"><template #default="{row}">￥{{Number(row.price).toFixed(2)}}</template></el-table-column><el-table-column label="库存"><template #default="{row}"><el-tag :type="row.stock<=5?'danger':'success'">{{row.stock}} 件</el-tag></template></el-table-column><el-table-column label="状态"><template #default="{row}"><el-switch :model-value="row.status===1" @change="value=>toggle(row,value)"/></template></el-table-column><el-table-column label="操作" width="150"><template #default="{row}"><el-button text type="primary" @click="openEdit(row)">编辑</el-button><el-button text type="danger" @click="remove(row)">删除</el-button></template></el-table-column></el-table><el-pagination class="pager" background layout="total, prev, pager, next" :total="result.total" :page-size="filters.size" v-model:current-page="filters.page" @current-change="load"/></section>
+    <el-dialog v-model="visible" :title="editing?'编辑甜品':'新增甜品'" width="620px"><el-form label-position="top"><div class="form-grid"><el-form-item label="甜品名称"><el-input v-model="form.name"/></el-form-item><el-form-item label="所属分类"><el-select v-model="form.categoryId"><el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id"/></el-select></el-form-item><el-form-item label="价格"><el-input-number v-model="form.price" :min="0" :precision="2" controls-position="right"/></el-form-item><el-form-item label="库存"><el-input-number v-model="form.stock" :min="0" :precision="0" controls-position="right"/></el-form-item></div><el-form-item label="甜品图片"><el-upload :show-file-list="false" :http-request="upload"><el-button>上传图片</el-button></el-upload><el-image v-if="form.image" class="preview" :src="form.image"/></el-form-item><el-form-item label="产品描述"><el-input v-model="form.description" type="textarea" :rows="3" maxlength="255"/></el-form-item></el-form><template #footer><el-button @click="visible=false">取消</el-button><el-button type="primary" :loading="saving" @click="save">保存</el-button></template></el-dialog>
+  </div>
+</template>
+<script setup>
+import { onMounted, reactive, ref } from 'vue'
+import { ElMessage,ElMessageBox } from 'element-plus'
+import { listCategories } from '../api/category'
+import { pageDesserts,createDessert,updateDessert,deleteDessert,changeDessertStatus,uploadDessertImage } from '../api/dessert'
+const categories=ref([]),result=reactive({records:[],total:0}),loading=ref(false),visible=ref(false),saving=ref(false),editing=ref(null)
+const filters=reactive({page:1,size:10,name:'',categoryId:null}),form=reactive({name:'',categoryId:null,price:0,stock:0,image:'',description:'',status:1})
+async function load(){loading.value=true;try{Object.assign(result,await pageDesserts(filters))}catch(e){ElMessage.error(e.message)}finally{loading.value=false}}
+function search(){filters.page=1;load()} function reset(){filters.name='';filters.categoryId=null;search()}
+function openCreate(){editing.value=null;Object.assign(form,{name:'',categoryId:categories.value[0]?.id||null,price:0,stock:0,image:'',description:'',status:1});visible.value=true}
+function openEdit(row){editing.value=row;Object.assign(form,row);visible.value=true}
+async function save(){if(!form.name.trim()||!form.categoryId){ElMessage.warning('请填写名称并选择分类');return}saving.value=true;try{editing.value?await updateDessert(editing.value.id,form):await createDessert(form);ElMessage.success('保存成功');visible.value=false;await load()}catch(e){ElMessage.error(e.message)}finally{saving.value=false}}
+async function upload({file}){try{const r=await uploadDessertImage(file);form.image=r.path;ElMessage.success('图片上传成功')}catch(e){ElMessage.error(e.message)}}
+async function toggle(row,value){try{await changeDessertStatus(row.id,value?1:0);row.status=value?1:0;ElMessage.success('状态已更新')}catch(e){ElMessage.error(e.message)}}
+async function remove(row){try{await ElMessageBox.confirm(`确认删除“${row.name}”吗？`,'删除甜品',{type:'warning'});await deleteDessert(row.id);ElMessage.success('删除成功');await load()}catch(e){if(e!=='cancel'&&e!=='close')ElMessage.error(e.message)}}
+onMounted(async()=>{try{categories.value=await listCategories()}catch(e){ElMessage.error(e.message)}await load()})
+</script>
+<style scoped>
+.filters{display:grid;grid-template-columns:2fr 1.2fr auto auto;gap:12px}.product{display:flex;align-items:center;gap:12px}.product .el-image{width:44px;height:44px;border-radius:10px;background:#392820;display:grid;place-items:center}.pager{justify-content:flex-end;margin-top:18px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}.form-grid .el-select,.form-grid .el-input-number{width:100%}.preview{width:72px;height:72px;margin-left:12px;border-radius:10px}@media(max-width:700px){.filters{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}}
+</style>
