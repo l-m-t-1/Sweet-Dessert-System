@@ -5,3 +5,6 @@ backend/backups/
 frontend/node_modules/
 frontend/dist/
 *.sql
+!backend/src/main/resources/db/
+!backend/src/main/resources/db/migration/
+!backend/src/main/resources/db/migration/*.sql
