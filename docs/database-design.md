@@ -54,7 +54,7 @@
 | `customer_name` | varchar(100) | 顾客姓名 |
 | `customer_phone` | varchar(30) | 联系电话 |
 | `total_amount` | decimal(10,2) | 订单总金额 |
-| `status` | varchar(20) | `PENDING`、`COMPLETED`、`CANCELLED` |
+| `status` | varchar(20) | `CREATED`、`COMPLETED`、`CANCELLED` |
 | `remark` | varchar(255) | 订单备注 |
 | `create_time` | datetime | 创建时间 |
 | `update_time` | datetime | 更新时间 |

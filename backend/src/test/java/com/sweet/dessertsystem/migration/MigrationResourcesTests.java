@@ -7,8 +7,16 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 class MigrationResourcesTests {
+
+    @Test
+    void springBootFlywayAutoConfigurationModuleIsPresent() {
+        assertThatCode(() -> Class.forName(
+                "org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration"))
+                .doesNotThrowAnyException();
+    }
 
     @Test
     void migrationFilesArePackagedAndContainRequiredTables() throws IOException {
