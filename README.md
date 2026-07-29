@@ -70,6 +70,8 @@ npm run dev
 
 前端开发地址为 `http://localhost:5173`，后端接口地址为 `http://localhost:8080`。上传图片保存在 `backend/uploads/desserts/`。
 
+所有业务接口统一使用 `/api` 前缀；开发服务器会将该前缀原样转发给后端，图片访问路径继续使用 `/uploads`。
+
 ## 核心业务流程
 
 1. 创建订单时锁定对应甜品库存，校验库存后扣减数量。
