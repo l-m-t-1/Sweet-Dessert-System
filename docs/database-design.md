@@ -1,113 +1,95 @@
 # 甜品管理系统数据库设计
 
-## 1. 用户表 user
+数据库由 Flyway 版本脚本自动创建和升级，脚本位于 `backend/src/main/resources/db/migration/`。
 
-用途：
-存储管理员和员工账号信息。
+## 表关系
 
-字段：
+- `category` 1:N `dessert`
+- `orders` 1:N `order_detail`
+- `dessert` 1:N `order_detail`
+- `dessert` 1:N `stock_record`
+- `orders` 1:N `stock_record`（仅订单相关流水）
 
-|字段|类型|说明|
-|-|-|-|
-|id|bigint|主键|
-|username|varchar(50)|用户名|
-|password|varchar(100)|密码|
-|role|varchar(20)|角色|
-|create_time|datetime|创建时间|
+## 1. 用户表 `user`
 
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `id` | bigint | 主键 |
+| `username` | varchar(50) | 登录名 |
+| `password` | varchar(100) | 密码 |
+| `role` | varchar(20) | 角色 |
+| `create_time` | datetime | 创建时间 |
+| `update_time` | datetime | 更新时间 |
 
----
+## 2. 分类表 `category`
 
-## 2. 甜品分类表 category
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `id` | bigint | 主键 |
+| `name` | varchar(50) | 分类名称 |
+| `create_time` | datetime | 创建时间 |
+| `update_time` | datetime | 更新时间 |
 
-用途：
-管理甜品分类。
+## 3. 甜品表 `dessert`
 
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `id` | bigint | 主键 |
+| `name` | varchar(100) | 甜品名称 |
+| `category_id` | bigint | 分类 ID |
+| `price` | decimal(10,2) | 当前售价 |
+| `stock` | int | 当前库存 |
+| `image` | varchar(255) | 图片地址 |
+| `description` | text | 商品介绍 |
+| `status` | tinyint | 1 上架，0 下架 |
+| `create_time` | datetime | 创建时间 |
+| `update_time` | datetime | 更新时间 |
 
-字段：
+## 4. 订单主表 `orders`
 
-|字段|类型|说明|
-|-|-|-|
-|id|bigint|主键|
-|name|varchar(50)|分类名称|
-|create_time|datetime|创建时间|
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `id` | bigint | 主键 |
+| `order_no` | varchar(50) | 唯一订单号 |
+| `customer_name` | varchar(100) | 顾客姓名 |
+| `customer_phone` | varchar(30) | 联系电话 |
+| `total_amount` | decimal(10,2) | 订单总金额 |
+| `status` | varchar(20) | `PENDING`、`COMPLETED`、`CANCELLED` |
+| `remark` | varchar(255) | 订单备注 |
+| `create_time` | datetime | 创建时间 |
+| `update_time` | datetime | 更新时间 |
 
+## 5. 订单明细表 `order_detail`
 
----
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `id` | bigint | 主键 |
+| `order_id` | bigint | 订单 ID |
+| `dessert_id` | bigint | 甜品 ID |
+| `dessert_name` | varchar(100) | 下单时商品名称快照 |
+| `unit_price` | decimal(10,2) | 下单时单价快照 |
+| `quantity` | int | 购买数量 |
+| `subtotal` | decimal(10,2) | 明细小计 |
 
-## 3. 甜品商品表 dessert
+保存名称与价格快照后，即使商品后来改名或调价，历史订单仍能保持原始成交信息。
 
-用途：
-保存甜品信息。
+## 6. 库存流水表 `stock_record`
 
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `id` | bigint | 主键 |
+| `dessert_id` | bigint | 甜品 ID |
+| `order_id` | bigint | 关联订单 ID，手工调整时为空 |
+| `change_type` | varchar(20) | `MANUAL_IN`、`MANUAL_OUT`、`ORDER_OUT`、`ORDER_RETURN` |
+| `quantity` | int | 正数入库、负数出库 |
+| `stock_before` | int | 变化前库存 |
+| `stock_after` | int | 变化后库存 |
+| `remark` | varchar(255) | 调整原因 |
+| `create_time` | datetime | 创建时间 |
 
-字段：
+## 一致性策略
 
-|字段|类型|说明|
-|-|-|-|
-|id|bigint|主键|
-|name|varchar(100)|甜品名称|
-|category_id|bigint|分类ID|
-|price|decimal|价格|
-|stock|int|库存|
-|image|varchar(255)|图片|
-|description|text|介绍|
-|status|int|状态|
-
-
----
-
-## 4. 库存记录表 stock
-
-用途：
-记录库存变化。
-
-
-字段：
-
-|字段|类型|说明|
-|-|-|-|
-|id|bigint|主键|
-|dessert_id|bigint|甜品ID|
-|quantity|int|数量|
-|type|varchar(20)|入库/出库|
-|create_time|datetime|时间|
-
-
----
-
-## 5. 订单表 orders
-
-用途：
-保存订单。
-
-
-字段：
-
-|字段|类型|说明|
-|-|-|-|
-|id|bigint|主键|
-|order_no|varchar(50)|订单编号|
-|user_id|bigint|用户ID|
-|total_price|decimal|总金额|
-|status|varchar(20)|订单状态|
-|create_time|datetime|创建时间|
-
-
----
-
-## 6. 订单详情表 order_detail
-
-用途：
-记录订单购买商品。
-
-
-字段：
-
-|字段|类型|说明|
-|-|-|-|
-|id|bigint|主键|
-|order_id|bigint|订单ID|
-|dessert_id|bigint|甜品ID|
-|quantity|int|数量|
-|price|decimal|单价|
+- 创建订单、扣减库存、写入订单明细和库存流水在同一个数据库事务内完成。
+- 扣库前通过行锁读取商品，防止并发订单造成超卖。
+- 取消订单、恢复库存和写入回库流水也在同一个事务内完成。
+- 业务状态限制重复完成或重复取消，避免重复扣库、回库。
