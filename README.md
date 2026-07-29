@@ -53,6 +53,13 @@ cd backend
 .\mvnw.cmd spring-boot:run
 ```
 
+如果使用 Git 忽略的 `backend/application-local.properties` 保存本机数据库账号，也可以直接运行：
+
+```powershell
+cd backend
+.\start-local.ps1
+```
+
 启动前端：
 
 ```powershell
