@@ -3,6 +3,7 @@ package com.sweet.dessertsystem.controller;
 
 import com.sweet.dessertsystem.entity.User;
 import com.sweet.dessertsystem.common.ApiResponse;
+import com.sweet.dessertsystem.dto.UserView;
 import com.sweet.dessertsystem.exception.BusinessException;
 import com.sweet.dessertsystem.service.UserService;
 import org.springframework.web.bind.annotation.*;
@@ -27,10 +28,11 @@ public class UserController {
 
 
     @GetMapping("/list")
-    public List<User> list(){
+    public ApiResponse<List<UserView>> list(){
 
-        return userService.list();
-
+        return ApiResponse.ok(userService.list().stream()
+                .map(UserView::from)
+                .toList());
     }
 
 
