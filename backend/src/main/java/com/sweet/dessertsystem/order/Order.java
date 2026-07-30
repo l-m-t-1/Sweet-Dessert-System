@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 public class Order {
     @TableId(type = IdType.AUTO)
     private Long id;
+    private Long userId;
     private String orderNo;
     private String customerName;
     private String customerPhone;

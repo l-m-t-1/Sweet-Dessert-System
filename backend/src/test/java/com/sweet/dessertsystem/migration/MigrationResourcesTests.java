@@ -23,6 +23,7 @@ class MigrationResourcesTests {
         String baseline = resource("db/migration/V1__baseline_core_schema.sql");
         String orders = resource("db/migration/V2__orders_and_stock_records.sql");
         String seed = resource("db/migration/V3__seed_demo_data.sql");
+        String accounts = resource("db/migration/V4__customer_accounts_and_order_ownership.sql");
 
         assertThat(baseline)
                 .contains("CREATE TABLE IF NOT EXISTS `user`")
@@ -35,6 +36,13 @@ class MigrationResourcesTests {
         assertThat(seed)
                 .contains("WHERE NOT EXISTS")
                 .contains("未分类");
+        assertThat(accounts)
+                .contains("information_schema.COLUMNS")
+                .contains("ADD COLUMN status")
+                .contains("ADD COLUMN user_id")
+                .contains("idx_orders_user_id_create_time")
+                .contains("UPDATE `user`")
+                .contains("$2b$");
     }
 
     private String resource(String path) throws IOException {
