@@ -21,14 +21,15 @@ class AdminUserServiceTests {
 
     @Test
     void listsSafeAccountSummaries() {
+        User admin = user(1L, "admin", "ADMIN", 1);
         User user = user(2L, "alice", "USER", 1);
-        when(userMapper.countUsers("ali")).thenReturn(1L);
-        when(userMapper.findUsers("ali", 0, 10)).thenReturn(List.of(user));
+        when(userMapper.countUsers(null)).thenReturn(2L);
+        when(userMapper.findUsers(null, 0, 10)).thenReturn(List.of(admin, user));
 
-        AdminUserPageResult result = service.page(1, 10, " ali ");
+        AdminUserPageResult result = service.page(1, 10, null);
 
-        assertThat(result.total()).isEqualTo(1);
-        assertThat(result.records()).containsExactly(UserView.from(user));
+        assertThat(result.total()).isEqualTo(2);
+        assertThat(result.records()).containsExactly(UserView.from(admin), UserView.from(user));
     }
 
     @Test

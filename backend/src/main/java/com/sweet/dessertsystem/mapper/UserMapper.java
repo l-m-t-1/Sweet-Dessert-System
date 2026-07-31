@@ -13,7 +13,7 @@ public interface UserMapper extends BaseMapper<User> {
             <script>
             SELECT id, username, role, status, create_time, update_time
             FROM user
-            WHERE role = 'USER'
+            WHERE 1 = 1
             <if test="keyword != null">
               AND username LIKE CONCAT('%', #{keyword}, '%')
             </if>
@@ -29,7 +29,7 @@ public interface UserMapper extends BaseMapper<User> {
             <script>
             SELECT COUNT(*)
             FROM user
-            WHERE role = 'USER'
+            WHERE 1 = 1
             <if test="keyword != null">
               AND username LIKE CONCAT('%', #{keyword}, '%')
             </if>

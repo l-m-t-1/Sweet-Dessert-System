@@ -7,11 +7,14 @@
     <section class="panel">
       <el-table v-loading="loading" :data="records">
         <el-table-column prop="username" label="用户名" min-width="180" />
-        <el-table-column label="身份" width="120"><template #default>普通用户</template></el-table-column>
+        <el-table-column label="身份" width="120"><template #default="{ row }"><el-tag :type="row.role === 'ADMIN' ? 'warning' : ''">{{ row.role === 'ADMIN' ? '管理员' : '普通用户' }}</el-tag></template></el-table-column>
         <el-table-column label="注册时间" min-width="190"><template #default="{ row }">{{ formatTime(row.createTime) }}</template></el-table-column>
         <el-table-column label="状态" width="120"><template #default="{ row }"><el-tag :type="row.status === 1 ? 'success' : 'info'">{{ row.status === 1 ? '已启用' : '已停用' }}</el-tag></template></el-table-column>
         <el-table-column label="操作" width="150" align="right">
-          <template #default="{ row }"><el-button :type="row.status === 1 ? 'danger' : 'success'" plain @click="toggle(row)">{{ row.status === 1 ? '停用' : '启用' }}</el-button></template>
+          <template #default="{ row }">
+            <span v-if="row.role === 'ADMIN'" class="muted">受保护</span>
+            <el-button v-else :type="row.status === 1 ? 'danger' : 'success'" plain @click="toggle(row)">{{ row.status === 1 ? '停用' : '启用' }}</el-button>
+          </template>
         </el-table-column>
       </el-table>
       <el-pagination v-if="total > size" v-model:current-page="page" :page-size="size" :total="total" layout="total, prev, pager, next" @current-change="load" />
