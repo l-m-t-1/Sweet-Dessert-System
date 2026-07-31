@@ -43,7 +43,7 @@ class AuthServiceTests {
         assertThat(saved.getPassword()).isEqualTo("$2b$encoded");
         assertThat(saved.getRole()).isEqualTo("USER");
         assertThat(saved.getStatus()).isEqualTo(1);
-        assertThat(view).isEqualTo(new UserView(7L, "alice", "USER"));
+        assertThat(view).isEqualTo(new UserView(7L, "alice", "USER", 1, null));
     }
 
     @Test
