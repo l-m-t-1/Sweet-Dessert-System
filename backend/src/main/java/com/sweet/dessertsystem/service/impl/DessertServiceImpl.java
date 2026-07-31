@@ -36,6 +36,18 @@ public class DessertServiceImpl extends ServiceImpl<DessertMapper, Dessert>
     }
 
     @Override
+    public DessertPageResult pageAvailable(long page, long size, String name, Long categoryId) {
+        long safePage = Math.max(page, 1);
+        long safeSize = Math.min(Math.max(size, 1), 100);
+        String keyword = name == null ? null : name.trim();
+        long total = dessertMapper.countAvailablePage(keyword, categoryId);
+        return new DessertPageResult(
+                dessertMapper.findAvailablePage(keyword, categoryId,
+                        (safePage - 1) * safeSize, safeSize),
+                total, safePage, safeSize);
+    }
+
+    @Override
     public DessertView create(DessertRequest request) {
         validate(request);
         Dessert dessert = copy(request, new Dessert());

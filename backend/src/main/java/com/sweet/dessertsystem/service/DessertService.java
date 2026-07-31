@@ -9,6 +9,7 @@ import com.sweet.dessertsystem.entity.Dessert;
 
 public interface DessertService extends IService<Dessert> {
     DessertPageResult page(long page, long size, String name, Long categoryId);
+    DessertPageResult pageAvailable(long page, long size, String name, Long categoryId);
     DessertView create(DessertRequest request);
     DessertView update(Long id, DessertRequest request);
     void delete(Long id);

@@ -57,8 +57,45 @@ public class OrderService {
         return order.withItems(orderDetailMapper.findViewsByOrderId(id));
     }
 
+    public OrderPageResult pageForUser(Long userId, long page, long size, String status) {
+        long safePage = Math.max(page, 1);
+        long safeSize = Math.min(Math.max(size, 1), 100);
+        String safeStatus = normalizeStatus(status);
+        long total = orderMapper.countPageByUserId(userId, safeStatus);
+        return new OrderPageResult(
+                orderMapper.findPageByUserId(userId, safeStatus,
+                        (safePage - 1) * safeSize, safeSize),
+                total, safePage, safeSize);
+    }
+
+    public OrderView detailForUser(Long id, Long userId) {
+        OrderView order = orderMapper.findViewByIdAndUserId(id, userId);
+        if (order == null) {
+            throw new BusinessException("无权访问该订单");
+        }
+        return order.withItems(orderDetailMapper.findViewsByOrderId(id));
+    }
+
     @Transactional
     public OrderView create(CreateOrderRequest request) {
+        if (request == null || request.customerName() == null
+                || request.customerName().trim().isEmpty()) {
+            throw new BusinessException("请填写客户名称");
+        }
+        return createInternal(request, null, request.customerName().trim());
+    }
+
+    @Transactional
+    public OrderView createForUser(CreateOrderRequest request, Long userId, String username) {
+        if (userId == null || username == null || username.trim().isEmpty()) {
+            throw new BusinessException("登录信息无效");
+        }
+        return createInternal(request, userId, username.trim());
+    }
+
+    private OrderView createInternal(CreateOrderRequest request,
+                                     Long userId,
+                                     String customerName) {
         Map<Long, Integer> quantities = validateAndAggregate(request);
         List<Dessert> desserts = new ArrayList<>();
         BigDecimal total = BigDecimal.ZERO;
@@ -80,8 +117,9 @@ public class OrderService {
         }
 
         Order order = new Order();
+        order.setUserId(userId);
         order.setOrderNo(generateOrderNo());
-        order.setCustomerName(request.customerName().trim());
+        order.setCustomerName(customerName);
         order.setCustomerPhone(blankToNull(request.customerPhone()));
         order.setRemark(blankToNull(request.remark()));
         order.setStatus("CREATED");
@@ -129,6 +167,23 @@ public class OrderService {
     @Transactional
     public void cancel(Long id) {
         Order order = requireCreatedOrder(id, "只有已创建订单可以取消");
+        cancelOrder(order);
+    }
+
+    @Transactional
+    public void cancelForUser(Long id, Long userId) {
+        Order order = orderMapper.findByIdAndUserIdForUpdate(id, userId);
+        if (order == null) {
+            throw new BusinessException("无权访问该订单");
+        }
+        if (!"CREATED".equals(order.getStatus())) {
+            throw new BusinessException("只有已创建订单可以取消");
+        }
+        cancelOrder(order);
+    }
+
+    private void cancelOrder(Order order) {
+        Long id = order.getId();
         for (OrderDetail detail : orderDetailMapper.selectByOrderId(id)) {
             Dessert dessert = dessertMapper.findByIdForUpdate(detail.getDessertId());
             if (dessert == null) {
@@ -148,11 +203,7 @@ public class OrderService {
     }
 
     private Map<Long, Integer> validateAndAggregate(CreateOrderRequest request) {
-        if (request == null || request.customerName() == null
-                || request.customerName().trim().isEmpty()) {
-            throw new BusinessException("请填写客户名称");
-        }
-        if (request.items() == null || request.items().isEmpty()) {
+        if (request == null || request.items() == null || request.items().isEmpty()) {
             throw new BusinessException("订单至少需要一件甜品");
         }
         Map<Long, Integer> quantities = new LinkedHashMap<>();

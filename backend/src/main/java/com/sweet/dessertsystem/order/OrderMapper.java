@@ -13,6 +13,9 @@ public interface OrderMapper extends BaseMapper<Order> {
     @Select("SELECT * FROM orders WHERE id = #{id} FOR UPDATE")
     Order findByIdForUpdate(Long id);
 
+    @Select("SELECT * FROM orders WHERE id = #{id} AND user_id = #{userId} FOR UPDATE")
+    Order findByIdAndUserIdForUpdate(@Param("id") Long id, @Param("userId") Long userId);
+
     @Select("""
             <script>
             SELECT id, order_no, customer_name, customer_phone, total_amount,
@@ -49,9 +52,48 @@ public interface OrderMapper extends BaseMapper<Order> {
     long countPage(@Param("orderNo") String orderNo, @Param("status") String status);
 
     @Select("""
+            <script>
+            SELECT id, order_no, customer_name, customer_phone, total_amount,
+                   status, remark, create_time, update_time
+            FROM orders
+            WHERE user_id = #{userId}
+            <if test='status != null and status != ""'>
+              AND status = #{status}
+            </if>
+            ORDER BY create_time DESC, id DESC
+            LIMIT #{offset}, #{size}
+            </script>
+            """)
+    List<OrderView> findPageByUserId(@Param("userId") Long userId,
+                                     @Param("status") String status,
+                                     @Param("offset") long offset,
+                                     @Param("size") long size);
+
+    @Select("""
+            <script>
+            SELECT COUNT(*) FROM orders
+            WHERE user_id = #{userId}
+            <if test='status != null and status != ""'>
+              AND status = #{status}
+            </if>
+            </script>
+            """)
+    long countPageByUserId(@Param("userId") Long userId,
+                           @Param("status") String status);
+
+    @Select("""
             SELECT id, order_no, customer_name, customer_phone, total_amount,
                    status, remark, create_time, update_time
             FROM orders WHERE id = #{id}
             """)
     OrderView findViewById(Long id);
+
+    @Select("""
+            SELECT id, order_no, customer_name, customer_phone, total_amount,
+                   status, remark, create_time, update_time
+            FROM orders
+            WHERE id = #{id} AND user_id = #{userId}
+            """)
+    OrderView findViewByIdAndUserId(@Param("id") Long id,
+                                    @Param("userId") Long userId);
 }
