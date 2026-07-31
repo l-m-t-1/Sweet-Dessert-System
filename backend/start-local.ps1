@@ -5,6 +5,8 @@ if (-not (Test-Path -LiteralPath $localConfig)) {
     throw 'Missing backend/application-local.properties. Configure the local database account first.'
 }
 
+& (Join-Path $PSScriptRoot 'ensure-local-secret.ps1') -ConfigPath $localConfig
+
 Push-Location $PSScriptRoot
 try {
     & (Join-Path $PSScriptRoot 'mvnw.cmd') `
