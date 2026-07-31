@@ -1,5 +1,23 @@
+SET @duplicate_username_count = (
+    SELECT COUNT(*)
+    FROM (
+        SELECT username
+        FROM `user`
+        GROUP BY username
+        HAVING COUNT(*) > 1
+    ) duplicate_usernames
+);
+SET @ddl = IF(
+    @duplicate_username_count = 0,
+    'SELECT 1',
+    'SELECT * FROM migration_blocked_resolve_duplicate_usernames_before_V4'
+);
+PREPARE statement FROM @ddl;
+EXECUTE statement;
+DEALLOCATE PREPARE statement;
+
 ALTER TABLE `user`
-    MODIFY COLUMN username VARCHAR(30) NOT NULL,
+    MODIFY COLUMN username VARCHAR(50) NOT NULL,
     MODIFY COLUMN password VARCHAR(100) NOT NULL,
     MODIFY COLUMN role VARCHAR(20) NOT NULL DEFAULT 'USER';
 
@@ -60,11 +78,27 @@ EXECUTE statement;
 DEALLOCATE PREPARE statement;
 
 UPDATE `user`
-SET password = '$2b$10$h3FHNf8rsh7X8YjB29KbdOmQesaV8QbMyuqwmZX.5qroyEH/22Bv2',
-    role = 'ADMIN',
+SET role = 'USER'
+WHERE username <> 'admin';
+
+UPDATE `user`
+SET role = 'ADMIN',
     status = 1
+WHERE username = 'admin';
+
+UPDATE `user`
+SET password = '$2b$10$h3FHNf8rsh7X8YjB29KbdOmQesaV8QbMyuqwmZX.5qroyEH/22Bv2'
 WHERE username = 'admin'
   AND password = 'admin123';
+
+INSERT INTO `user` (username, password, role, status)
+SELECT 'admin',
+       '$2b$10$h3FHNf8rsh7X8YjB29KbdOmQesaV8QbMyuqwmZX.5qroyEH/22Bv2',
+       'ADMIN',
+       1
+WHERE NOT EXISTS (
+    SELECT 1 FROM `user` WHERE username = 'admin'
+);
 
 SET @ddl = IF(
     EXISTS (

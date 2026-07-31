@@ -37,11 +37,16 @@ class MigrationResourcesTests {
                 .contains("WHERE NOT EXISTS")
                 .contains("未分类");
         assertThat(accounts)
+                .startsWith("SET @duplicate_username_count")
+                .contains("migration_blocked_resolve_duplicate_usernames_before_V4")
+                .contains("username VARCHAR(50)")
                 .contains("information_schema.COLUMNS")
                 .contains("ADD COLUMN status")
                 .contains("ADD COLUMN user_id")
                 .contains("idx_orders_user_id_create_time")
                 .contains("UPDATE `user`")
+                .contains("SET role = 'USER'")
+                .contains("WHERE username <> 'admin'")
                 .contains("$2b$");
     }
 

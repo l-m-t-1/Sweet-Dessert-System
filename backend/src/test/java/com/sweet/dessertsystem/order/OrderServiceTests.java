@@ -18,6 +18,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -124,6 +125,20 @@ class OrderServiceTests {
 
         verify(orderMapper).updateById(argThat((Order item) ->
                 item.getStatus().equals("COMPLETED")));
+    }
+
+    @Test
+    void rejectsQuantityOverflowWhenDuplicateItemsAreAggregated() {
+        CreateOrderRequest request = new CreateOrderRequest(
+                "alice", null, null,
+                List.of(
+                        new CreateOrderItemRequest(1L, Integer.MAX_VALUE),
+                        new CreateOrderItemRequest(1L, Integer.MAX_VALUE)));
+
+        assertThatThrownBy(() -> service().create(request))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("甜品数量过大");
+        verifyNoInteractions(dessertMapper, orderMapper, orderDetailMapper, stockRecordMapper);
     }
 
     private OrderService service() {

@@ -212,7 +212,16 @@ public class OrderService {
                     || item.quantity() == null || item.quantity() <= 0) {
                 throw new BusinessException("订单商品和数量必须有效");
             }
-            quantities.merge(item.dessertId(), item.quantity(), Integer::sum);
+            Integer current = quantities.get(item.dessertId());
+            if (current == null) {
+                quantities.put(item.dessertId(), item.quantity());
+                continue;
+            }
+            try {
+                quantities.put(item.dessertId(), Math.addExact(current, item.quantity()));
+            } catch (ArithmeticException exception) {
+                throw new BusinessException("甜品数量过大");
+            }
         }
         return quantities.entrySet().stream()
                 .sorted(Map.Entry.comparingByKey())

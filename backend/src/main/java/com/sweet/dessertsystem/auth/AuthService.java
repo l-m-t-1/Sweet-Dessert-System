@@ -5,6 +5,7 @@ import com.sweet.dessertsystem.dto.UserView;
 import com.sweet.dessertsystem.entity.User;
 import com.sweet.dessertsystem.exception.BusinessException;
 import com.sweet.dessertsystem.mapper.UserMapper;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +34,11 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(password));
         user.setRole("USER");
         user.setStatus(1);
-        userMapper.insert(user);
+        try {
+            userMapper.insert(user);
+        } catch (DuplicateKeyException exception) {
+            throw new BusinessException("用户名已存在");
+        }
         return UserView.from(user);
     }
 

@@ -10,6 +10,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,6 +50,18 @@ class AuthServiceTests {
     @Test
     void duplicateUsernameIsRejected() {
         when(userMapper.selectOne(any())).thenReturn(user(2L, "alice", "$2b$hash", "USER", 1));
+
+        assertThatThrownBy(() -> service.register(new RegisterRequest("alice", "secret12")))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("用户名已存在");
+    }
+
+    @Test
+    void concurrentDuplicateInsertReturnsFriendlyError() {
+        when(userMapper.selectOne(any())).thenReturn(null);
+        when(passwordEncoder.encode("secret12")).thenReturn("$2b$encoded");
+        when(userMapper.insert(any(User.class)))
+                .thenThrow(new DuplicateKeyException("uk_user_username"));
 
         assertThatThrownBy(() -> service.register(new RegisterRequest("alice", "secret12")))
                 .isInstanceOf(BusinessException.class)

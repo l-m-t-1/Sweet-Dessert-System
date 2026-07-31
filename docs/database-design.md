@@ -16,7 +16,7 @@
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | `id` | bigint | 主键 |
-| `username` | varchar(30) | 唯一登录名 |
+| `username` | varchar(50) | 唯一登录名（新注册限制 3–30 个字符） |
 | `password` | varchar(255) | BCrypt 密码哈希 |
 | `role` | varchar(20) | `ADMIN` 或 `USER` |
 | `status` | tinyint | 1 启用，0 停用 |

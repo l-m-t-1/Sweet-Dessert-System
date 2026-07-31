@@ -7,7 +7,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(properties = "spring.flyway.enabled=false")
+@SpringBootTest(properties = {
+		"spring.flyway.enabled=false",
+		"app.jwt-secret=test-only-jwt-secret-with-at-least-32-bytes"
+})
 class DessertSystemApplicationTests {
 
 	@Autowired
