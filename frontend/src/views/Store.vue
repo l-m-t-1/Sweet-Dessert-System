@@ -22,7 +22,7 @@
       <div v-loading="loading" class="dessert-grid">
         <article v-for="item in records" :key="item.id" class="dessert-card">
           <div class="dessert-image">
-            <img v-if="item.image" :src="item.image" :alt="item.name">
+            <img v-if="item.image && !brokenImages.has(item.id)" :src="item.image" :alt="item.name" @error="markImageBroken(item.id)">
             <span v-else>🍰</span>
             <div v-if="item.stock <= 0" class="sold-out">已售罄</div>
           </div>
@@ -48,6 +48,7 @@ import { listCategories } from '../api/category'
 import { addCartItem, readCart, saveCart } from '../cart/cart'
 
 const records = ref([])
+const brokenImages = ref(new Set())
 const categories = ref([])
 const categoryId = ref(null)
 const keyword = ref('')
@@ -82,6 +83,10 @@ function applyFilters() {
 function add(item) {
   saveCart(addCartItem(readCart(), item))
   ElMessage.success(`已将「${item.name}」加入购物车`)
+}
+
+function markImageBroken(id) {
+  brokenImages.value = new Set([...brokenImages.value, id])
 }
 
 const money = value => Number(value).toFixed(2)
