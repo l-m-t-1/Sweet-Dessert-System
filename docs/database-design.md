@@ -5,6 +5,7 @@
 ## 表关系
 
 - `category` 1:N `dessert`
+- `user` 1:N `orders`（顾客订单归属）
 - `orders` 1:N `order_detail`
 - `dessert` 1:N `order_detail`
 - `dessert` 1:N `stock_record`
@@ -15,9 +16,10 @@
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | `id` | bigint | 主键 |
-| `username` | varchar(50) | 登录名 |
-| `password` | varchar(100) | 密码 |
-| `role` | varchar(20) | 角色 |
+| `username` | varchar(30) | 唯一登录名 |
+| `password` | varchar(255) | BCrypt 密码哈希 |
+| `role` | varchar(20) | `ADMIN` 或 `USER` |
+| `status` | tinyint | 1 启用，0 停用 |
 | `create_time` | datetime | 创建时间 |
 | `update_time` | datetime | 更新时间 |
 
@@ -26,6 +28,7 @@
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | `id` | bigint | 主键 |
+| `user_id` | bigint | 顾客账户 ID，后台历史订单可为空 |
 | `name` | varchar(50) | 分类名称 |
 | `create_time` | datetime | 创建时间 |
 | `update_time` | datetime | 更新时间 |
@@ -89,6 +92,8 @@
 
 ## 一致性策略
 
+- 顾客订单写入当前 JWT 对应的用户 ID，查询、查看详情和取消均附带用户归属条件。
+- JWT 每次鉴权都会读取当前账户状态，停用账户无需等待令牌过期。
 - 创建订单、扣减库存、写入订单明细和库存流水在同一个数据库事务内完成。
 - 扣库前通过行锁读取商品，防止并发订单造成超卖。
 - 取消订单、恢复库存和写入回库流水也在同一个事务内完成。
