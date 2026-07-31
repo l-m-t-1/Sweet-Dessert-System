@@ -24,6 +24,8 @@ class MigrationResourcesTests {
         String orders = resource("db/migration/V2__orders_and_stock_records.sql");
         String seed = resource("db/migration/V3__seed_demo_data.sql");
         String accounts = resource("db/migration/V4__customer_accounts_and_order_ownership.sql");
+        String secureAdmin = resource(
+                "db/migration/V5__secure_legacy_admin_password.sql");
 
         assertThat(baseline)
                 .contains("CREATE TABLE IF NOT EXISTS `user`")
@@ -47,6 +49,11 @@ class MigrationResourcesTests {
                 .contains("UPDATE `user`")
                 .contains("SET role = 'USER'")
                 .contains("WHERE username <> 'admin'")
+                .contains("$2b$");
+        assertThat(secureAdmin)
+                .contains("username = 'admin'")
+                .contains("password NOT LIKE '$2%'")
+                .contains("role = 'ADMIN'")
                 .contains("$2b$");
     }
 
