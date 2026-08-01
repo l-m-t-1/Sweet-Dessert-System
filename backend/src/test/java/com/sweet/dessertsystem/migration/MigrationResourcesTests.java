@@ -12,6 +12,15 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 class MigrationResourcesTests {
 
     @Test
+    void localConfigurationLoadsFromBackendAndProjectRootWorkingDirectories() throws IOException {
+        String application = resource("application.properties");
+
+        assertThat(application).contains(
+                "spring.config.import=optional:file:./application-local.properties,"
+                        + "optional:file:./backend/application-local.properties");
+    }
+
+    @Test
     void springBootFlywayAutoConfigurationModuleIsPresent() {
         assertThatCode(() -> Class.forName(
                 "org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration"))
